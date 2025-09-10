@@ -1,18 +1,36 @@
+import { db } from '../db';
+import { experienceTable } from '../db/schema';
 import { type UpdateExperienceInput, type Experience } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const updateExperience = async (input: UpdateExperienceInput): Promise<Experience> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is updating an existing work experience entry in the database.
-    return {
-        id: input.id,
-        company_name: input.company_name || 'Updated Company',
-        position: input.position || 'Updated Position',
-        description: input.description || null,
-        start_date: input.start_date || new Date(),
-        end_date: input.end_date || null,
-        is_current: input.is_current || false,
-        location: input.location || null,
-        company_url: input.company_url || null,
-        created_at: new Date()
-    } as Experience;
-}
+  try {
+    // Build update object with only defined fields
+    const updateData: Partial<typeof experienceTable.$inferInsert> = {};
+    
+    if (input.company_name !== undefined) updateData.company_name = input.company_name;
+    if (input.position !== undefined) updateData.position = input.position;
+    if (input.description !== undefined) updateData.description = input.description;
+    if (input.start_date !== undefined) updateData.start_date = input.start_date;
+    if (input.end_date !== undefined) updateData.end_date = input.end_date;
+    if (input.is_current !== undefined) updateData.is_current = input.is_current;
+    if (input.location !== undefined) updateData.location = input.location;
+    if (input.company_url !== undefined) updateData.company_url = input.company_url;
+
+    // Update the experience record
+    const result = await db.update(experienceTable)
+      .set(updateData)
+      .where(eq(experienceTable.id, input.id))
+      .returning()
+      .execute();
+
+    if (result.length === 0) {
+      throw new Error(`Experience with id ${input.id} not found`);
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error('Experience update failed:', error);
+    throw error;
+  }
+};

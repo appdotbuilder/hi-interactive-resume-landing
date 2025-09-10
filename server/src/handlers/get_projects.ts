@@ -1,15 +1,33 @@
+import { db } from '../db';
+import { projectsTable } from '../db/schema';
+import { desc, eq } from 'drizzle-orm';
 import { type Project } from '../schema';
 
 export const getProjects = async (): Promise<Project[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all projects for the resume landing page portfolio section.
-    // Should return projects ordered by created_at descending (most recent first).
-    return [];
-}
+  try {
+    const results = await db.select()
+      .from(projectsTable)
+      .orderBy(desc(projectsTable.created_at))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch projects:', error);
+    throw error;
+  }
+};
 
 export const getFeaturedProjects = async (): Promise<Project[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching only featured projects for the landing page hero section.
-    // Should return projects where is_featured = true.
-    return [];
-}
+  try {
+    const results = await db.select()
+      .from(projectsTable)
+      .where(eq(projectsTable.is_featured, true))
+      .orderBy(desc(projectsTable.created_at))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch featured projects:', error);
+    throw error;
+  }
+};

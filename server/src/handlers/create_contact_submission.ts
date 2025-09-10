@@ -1,16 +1,24 @@
+import { db } from '../db';
+import { contactSubmissionsTable } from '../db/schema';
 import { type CreateContactSubmissionInput, type ContactSubmission } from '../schema';
 
 export const createContactSubmission = async (input: CreateContactSubmissionInput): Promise<ContactSubmission> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new contact form submission and persisting it in the database.
-    // This handles contact form submissions from the landing page.
-    return {
-        id: 0, // Placeholder ID
+  try {
+    // Insert contact submission record
+    const result = await db.insert(contactSubmissionsTable)
+      .values({
         name: input.name,
         email: input.email,
         subject: input.subject,
         message: input.message,
-        is_read: false,
-        created_at: new Date()
-    } as ContactSubmission;
-}
+        is_read: false // Default value for new submissions
+      })
+      .returning()
+      .execute();
+
+    return result[0];
+  } catch (error) {
+    console.error('Contact submission creation failed:', error);
+    throw error;
+  }
+};

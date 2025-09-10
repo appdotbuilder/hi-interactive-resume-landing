@@ -1,10 +1,12 @@
+import { db } from '../db';
+import { experienceTable } from '../db/schema';
 import { type CreateExperienceInput, type Experience } from '../schema';
 
 export const createExperience = async (input: CreateExperienceInput): Promise<Experience> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new work experience entry and persisting it in the database.
-    return {
-        id: 0, // Placeholder ID
+  try {
+    // Insert experience record
+    const result = await db.insert(experienceTable)
+      .values({
         company_name: input.company_name,
         position: input.position,
         description: input.description,
@@ -12,7 +14,14 @@ export const createExperience = async (input: CreateExperienceInput): Promise<Ex
         end_date: input.end_date,
         is_current: input.is_current,
         location: input.location,
-        company_url: input.company_url,
-        created_at: new Date()
-    } as Experience;
-}
+        company_url: input.company_url
+      })
+      .returning()
+      .execute();
+
+    return result[0];
+  } catch (error) {
+    console.error('Experience creation failed:', error);
+    throw error;
+  }
+};
